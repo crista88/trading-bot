@@ -29,5 +29,5 @@ def initialize_logger():
     lg.getLogger().addHandler(lg.StreamHandler())
     
     # Log some messages
-    lg.info("This is an info message!")
-    lg.error("This is an error message!")
+    lg.info("Log initialized!")
+    
