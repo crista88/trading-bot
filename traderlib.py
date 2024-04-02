@@ -1,5 +1,6 @@
 # enconding: utf-8
 from logger import * 
+import alpaca_trade_api as tradeapi
 import sys, time, os, pytz
 import tulipy as ti
 import numpy as np
@@ -117,33 +118,166 @@ class Trader:
             except:
                 #i want to retry
                 lg.info("Position not found, waiting for it...")
-                time.sleep(5000)  #wait 5 sec and retry
+                time.sleep(5)  #wait 5 sec and retry
                 attempt += 1
 
         lg.info("Position not found for %s, not waiting any more" % asset)
         return False
 
+    def get_general_trend(self, asset):
+        # get general trend
+            # IN : asset, i will get 30 min candle data (i will see what from the data i will need,  probably the last value that it had-close data)-load historical data fc 
+            # OUT : UP islong /DOWN is short/NO TREND as strings  if no trend we go back to asset
+                # IF NO TREND GO BACK TO POINT ECHO
+        lg.info("GENERAL TREND ANALYSIS entered")
 
-    # get general trend
-        # IN : 30 min candle data (i will see what from the data i will need,  probably the last value that it had-close data)
-        # OUT : UP/DOWN/NO TREND as strings  if no trend we go back to asset
-            # IF NO TREND GO BACK TO POINT ECHO
+        attempt = 1
+        maxAttempts = 10 # ! total time = maxAttempts * 60 sec as implemented
 
+        try:
+            while True:
+                data = "ask Alpaca wrapper for 30 min candles  ? candles to be determined"
 
-    # get instant trend: # confirm the trend detected by general trend analyses
-        # IN : 5 min candle data (i will see what from the data i will need,  probably the last value that it had-close data)
-        # OUT : True as confirmed or False as not confirmed
-        
+                # calculate the EMAs
+                ema9 = ti.ema(data, 9)
+                ema26 = ti.ema(data, 26)
+                ema50 = ti.ema(data, 50)
 
-    # get rsi: 
-        # IN : 5 min candle data (i will see what from the data i will need,  probably the last value that it had-close data)
-        # OUT : True as confirmed or False as not confirmed
-        
+                lg.info("%s general trend EMAs: [%.2f,%.2f,%.2f]" % (asset,ema9,ema26,ema50))
+                        
+                #cheking the EMAs relative position
+                if (ema50 > ema26) and (ema26 > ema9):
+                    lg.info("Trend detected for %s: long" % asset)
+                    return "long"
+                elif (ema50 < ema26) and (ema26 < ema9):
+                    lg.info("Trend detected for %s: short" % asset)
+                    return "short"
+                elif attempt <= maxAttempts:
+                    lg.info("Trend not clear for %s, waiting" % asset)
+                    attempt += 1
+                    time.sleep(60)
+                else:
+                    lg.info("Trend not detected and timeout reached for %s" % asset)
+                    return "no trend"
+                
+        except Exception as e:
+            lg.error("Something went wrong at the get general trend")
+            lg.error(e)
+            sys.exit()
 
-    # get stochastic:
-        # IN: 5 min candle(OHLC all the data for every candle)
-        # OUT : True as confirmed or False as not confirmed
-           
+    def get_instant_trend(self, asset, trend):
+        # get instant trend: # confirm the trend detected by general trend analyses
+            # IN : asset, trend(long/short)
+            # OUT : True as trend confirmed or False as not confirmed-not a good moment to enter
+        lg.info("INSTANT TREND ANALYSIS entered")
+
+        attempt = 1
+        maxAttempts = 10 # ! total time = maxAttempts * 10 sec as implemented
+
+        try:
+            while True:
+                data = "ask Alpaca wrapper for 5 min candles  ? candles to be determined"
+
+                # calculate the EMAs
+                ema9 = ti.ema(data, 9)
+                ema26 = ti.ema(data, 26)
+                ema50 = ti.ema(data, 50)
+
+                lg.info("%s instant trend EMAs: [%.2f,%.2f,%.2f]" % (asset,ema9,ema26,ema50))
+
+                if (trend == "long") and (ema9 > ema26) and (ema26 > ema50):
+                    lg.info("Long trend confirmed for %s" % asset)
+                    return True
+                elif (trend == "short") and (ema9 < ema26) and (ema26 < ema50):
+                    lg.info("Short trend confirmed for %s" % asset)
+                    return True
+                elif attempt <= maxAttempts:
+                    lg.info("Trend not clear for %s, waiting" % asset)
+                    attempt += 1
+                    time.sleep(30)  # ?? adjust the sec if needed 30 or mayby 20 ??
+                else:
+                    lg.info("Trend not detected and timeout reached for %s" % asset)
+                    return False
+        except Exception as e:
+            lg.error("Something went wrong at the get instant trend")
+            lg.error(e)
+            sys.exit()
+
+    def get_rsi(self, asset, trend):
+        # get rsi: 
+            # IN : asset, trend (5 min candle data (i will see what from the data i will need,  probably the last value that it had-close data))
+            # OUT : True as confirmed or False as not confirmed
+        lg.info("RSI  ANALYSIS entered")   
+
+        attempt = 1
+        maxAttempts = 10 # ! total time = maxAttempts * 20 sec as implemented
+
+        try:
+            while True:
+                data = "ask Alpaca wrapper for 5 min candles  ? candles to be determined"
+
+                # calculate the RSI
+                rsi = ti.rsi(data, 14)  # it uses 14 samples window
+
+                lg.info("%s rsi = %.2f" % (asset,rsi))
+
+                if (trend == "long") and (rsi > 50) and (rsi < 80):
+                    lg.info("Long trend confirmed for %s" % asset)
+                    return True
+                elif (trend == "short") and (rsi < 50) and (rsi > 20):
+                    lg.info("Short trend confirmed for %s" % asset)
+                    return True
+                elif attempt <= maxAttempts:
+                    lg.info("Trend not clear for %s, waiting" % asset)
+                    attempt += 1
+                    time.sleep(20)  # ?? adjust the sec if needed 30 or mayby 20 ??
+                else:
+                    lg.info("Trend not detected and timeout reached for %s" % asset)
+                    return False
+                
+        except Exception as e:
+            lg.error("Something went wrong at the get rsi analysis")
+            lg.error(e)
+            sys.exit()
+
+    def get_stochastic(self, asset, trend):
+        # get stochastic:
+            # IN: asset, trend - 5 min candle(OHLC all the data for every candle)
+            # OUT : True as confirmed or False as not confirmed
+        lg.info("STOCHASTIC  ANALYSIS entered")   
+
+        attempt = 1
+        maxAttempts = 20 # ! total time = maxAttempts * 20 sec as implemented
+
+        try:
+            while True:
+                data = "ask Alpaca wrapper for 5 min candles  ? candles to be determined"
+
+                # calculate the STOCHASTIC  stoch_k = fast curve, stoch_d = slow curve
+                stoch_k, stoch_d = ti.stoch(high, low, close, 9, 6, 9)  # OPEN HIGH LOW AND CLOSE VALUE
+                #here our data can be either the closing price-close or the highest price-high or the lowest-low
+                #! in the other function our data = opening price - from OPEN HIGH LOW AND CLOSE VALUE (OHLC) but in this fc can be any of the other 3 but not the first
+
+                lg.info("%s stochastic = [%.2f, %.2f]" % (asset,stoch_k,stoch_d))
+
+                if (trend == "long") and (stoch_k > stoch_d) and (stoch_k < 80) and (stoch_d < 80):
+                    lg.info("Long trend confirmed for %s" % asset)
+                    return True
+                elif (trend == "short") and (stoch_k < stoch_d) and (stoch_k > 20) and (stoch_d > 20):
+                    lg.info("Short trend confirmed for %s" % asset)
+                    return True
+                elif attempt <= maxAttempts:
+                    lg.info("Trend not clear for %s, waiting" % asset)
+                    attempt += 1
+                    time.sleep(10)  # ?? adjust the sec if needed 30 or mayby 20 ??
+                else:
+                    lg.info("Trend not detected and timeout reached for %s" % asset)
+                    return False
+                
+        except Exception as e:
+            lg.error("Something went wrong at the get stochastic analysis")
+            lg.error(e)
+            sys.exit()  
 
     # enter position mode: check the filters in parallel (inside the positions)so if ay of them is cheked out we GET OUT
          # IF check take profit: -> if true CLOSE POSITION

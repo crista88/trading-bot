@@ -33,7 +33,7 @@ def clean_open_orders():
 # execute trading bot this function is the main and will ex all the algorithm from traderlib.py
 def main():
 
-    # initialize the logger
+    # initialize the logger (imported from logger)
     initialize_logger()
     # check if the account is ok
     check_account_ok()
@@ -42,12 +42,13 @@ def main():
     #define asset insert the value/ get the ticker
     ticker = input("Write the ticker you want to operate with")
 
-    trader = Trader(ticker)
-    trader.run()
+    trader = Trader(ticker) #initialize trading bot
+    tradingSuccess = trader.run() #run trading bot
     #run trading bot it's going to be a function from traderlib
         # in: string (ticker)
         # OUT: boolean (Tru = succes / False = failure)
-
+    if not tradingSuccess:
+        lg.info("Trading was not successful, locking asset")
 
 
 if __name__ == "__main__":
