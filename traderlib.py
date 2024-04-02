@@ -31,7 +31,7 @@ class Trader:
             lg.error("The asset %s is not answering well" % ticker)
             return False
 
-    def set_stoploss(self, entryPrice, direction):
+    def set_stopLoss(self, entryPrice, direction):
         # takes an entry price as input and set the stoplose (direction)
             # IN : entry price, direction (long/short)
             # OUT : stop loss
@@ -63,10 +63,12 @@ class Trader:
             if direction == "long":
                 # example 10 + (10*0.1) = 11
                 takeProfit = entryPrice + (entryPrice * takeProfitMargin)
+                lg.info("tale profit set for long at %.2f" % takeProfit)
                 return takeProfit
             elif direction == "short": 
                 # example 10 - (10*0.1) = 9
                 takeProfit = entryPrice - (entryPrice * takeProfitMargin)
+                lg.info("tale profit set for short at %.2f" % takeProfit)
                 return takeProfit
             else:
                 raise ValueError
@@ -103,9 +105,33 @@ class Trader:
         #OUT: boolean (True =  order cancelled, False = order not cancelled)
 
     def check_position(self, asset):
+
         #check position : check if the position has open or not
             # IN: ticker
             # OUT: boolean (True = order is there, False = order not there)
+        maxAttempts = 5
+        attempt = 1
+
+        while attempt <= maxAttempts:
+            try:
+                position = None #ask alpaca wrapper for a position
+                currentPrice = position.current_price
+                lg.info("The position was checked. Current price is: %.2f" %currentPrice)
+                return True
+            except:
+                #i want to retry
+                lg.info("Position not found, waiting for it...")
+                time.sleep(5)  #wait 5 sec and retry
+                attempt += 1
+
+        lg.info("Position not found for %s, not waiting any more" % asset)
+        return False
+
+    def get_current_price(self, asset):
+        #get the current price of an asset with a position open
+            # IN: ticker
+            # OUT: price $
+        
         maxAttempts = 5
         attempt = 1
 
@@ -278,9 +304,21 @@ class Trader:
             lg.error("Something went wrong at the get stochastic analysis")
             lg.error(e)
             sys.exit()  
+    
+    def enter_position_mode(self, asset, direction):
+        # enter position mode: check the filters in parallel (inside the positions)so if ay of them is cheked out we GET OUT
+            
+            entryPrice = " ask the Alpaca API for the entry price"
+            # set take profit
+            takeProfit = self.set_takeProfit(entryPrice, direction)
+            #set stop loss
+            stopLoss = self.set_stopLoss(entryPrice, direction)
 
-    # enter position mode: check the filters in parallel (inside the positions)so if ay of them is cheked out we GET OUT
-         # IF check take profit: -> if true CLOSE POSITION
+            while True:
+
+                if currentPrice >= takeProfit:
+                    lg.info("take profit met at %.2f.Current price is %.2f getting out..." % (takeProfit, currentPrice))
+            # IF check take profit: -> if true CLOSE POSITION
                 # IN: current gains (earning $)
                 # OUT: True/False
 
@@ -298,32 +336,24 @@ class Trader:
 
     def run():
         # LOOP UNTIL TIMEOUT REACHED (EX 2H)
-            # POINT ECHO: INITIAL CHECK
-            # CHECK POSITION : ask the API/broker if we have an open position with "asset"
-                # will be function with IN: asset as string // OUT :True(if exists) /False(does not exists)
+
+        # POINT ECHO: INITIAL CHECK
+        # CHECK POSITION : ask the API/broker if we have an open position with "asset"
+            # will be function with IN: asset as string // OUT :True(if exists) /False(does not exists)
 
 
-            # TREND ANALYSES - FUNCTION HISTORICAL DATA FUNCTION FROM ABOVE INTERVAL 30 MIN
-            # load 30 min data/candles: demand API the 30 min candles
+        # POINT DELTA
+        # get general trend : find a trend
+            # LOOP until timeout reached(ex 30 min)               
 
-            # GENERAL TREND analysis : FUNCTION GENERAL TREND analyse if the trend is fav(detect interesting trend find if the trend is UP or DOWN or NO TREND)
+        # get instant trend 
+            # if failed go back to POINT DELTA   
 
-            # LOOP until timeout reached(ex 30 min)
-                #POINT DELTA
-                # this loop will be as serial every condition has to be filled in cascade,
-                # this loop is part of a bigger loop that includes DEFINE ASSET+INITIAL CHECK+GENERAL TREND
+        # get rsi - fc from above
+            # if failed go back to POINT DELTA
 
-            # STEP 1: FUNCTION LOAD HISTORICAL DATA -load 5 min data/candle 
-                # if failed go back to POINT DELTA
-
-            # STEP 2: FUNCTION INSTANT TREND analysis : we know what are we looking for regardind the direction of the trend up/down/no trend//
-                # if failed go back to POINT DELTA
-
-            # STEP 3: FUNCTION RSI analysis - fc from above
-                # if failed go back to POINT DELTA
-
-            # STEP 4: FUNCTION stochastic analysis - fc from above
-                # if failed go back to POINT DELTA
+        # get stochastic - fc from above
+            # if failed go back to POINT DELTA
 
 
         # SUBMIT ORDER- this is a limit order - FUNCTION DEFINED ABOVE IN THE CLASS TO BE CALLED
@@ -332,12 +362,13 @@ class Trader:
         # CHECK POSITION: see if the position exists-FUNCTION DEFINED ABOVE IN THE CLASS TO BE CALLED
             # if false abort, OR  go back to POINT ECHO
 
-        # LOOP UNTIL TIMEOUT REACHED EX 7-8 H
-        # FUNCTION ENTER POSITION MODE  # check the filters in parallel so if ay of them is cheked out we GET OUT
+        
+        # ENTER POSITION MODE function # check the filters in parallel so if ay of them is cheked out we GET OUT
            
         # GET OUT
         # SUBMIT ORDER- closing position/ sell what we have/ market order-FUNCTION DEFINED ABOVE IN THE CLASS TO BE CALLED interact with broker API
                 # if false retry until it workes because we want to sell
+        
         # CHECK POSITION : see if the position exists-FUNCTION DEFINED ABOVE IN THE CLASS TO BE CALLED
                 # if false abort, OR  go back to submit order
 
