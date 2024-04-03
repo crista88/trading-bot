@@ -4,6 +4,7 @@
 from traderlib import *
 from logger import *
 import sys
+import generalvariables
 
 
 
@@ -43,13 +44,13 @@ def main():
     ticker = input("Write the ticker you want to operate with")
 
     trader = Trader(ticker) #initialize trading bot
-    tradingSuccess = trader.run() #run trading bot
+    tradingSuccess = trader.run() #run trading bot library 
     #run trading bot it's going to be a function from traderlib
         # in: string (ticker)
         # OUT: boolean (Tru = succes / False = failure)
     if not tradingSuccess:
         lg.info("Trading was not successful, locking asset")
-
+        # wait some time
 
 if __name__ == "__main__":
     main()
