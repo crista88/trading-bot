@@ -96,7 +96,7 @@ class Trader:
 
   
     #submit order:gets our order through the API (retry)
-        # IN : order data, order type(if is a limit order or market order)
+        # IN : order data(nr of shares), order type(if is a limit order or market order)
         # OUT : boolean (True = order went through, False = order did not get through)
 
 
@@ -127,6 +127,28 @@ class Trader:
         lg.info("Position not found for %s, not waiting any more" % asset)
         return False
 
+    def get_shares_amount(self, assetPrice):
+        # we will calc the number of shares that we will put in the next order depending on the total amount that we have available
+        # In: assetprice
+        # OUT: number of shares
+
+        lg.info("Getting shares ammount)")
+
+        try:
+            #define the max to spend
+            maxSpendEquity= 1000 # $
+            #get the total equity available
+            totalEquity = " ask Alpaca wrapper for available equity"
+            #calculate the number of shares
+            sharesQuantity = int(maxSpendEquity / assetPrice)
+            lg.info("Total shares to operate with: %d" % sharesQuantity)
+            return sharesQuantity
+        
+        except Exception as e:
+            lg.error("Something happend at get shares ammount")
+            lg.error(e)
+            sys.exit()
+
     def get_current_price(self, asset):
         #get the current price of an asset with a position open
             # IN: ticker
@@ -140,14 +162,14 @@ class Trader:
                 position = None #ask alpaca wrapper for a position
                 currentPrice = position.current_price
                 lg.info("The position was checked. Current price is: %.2f" %currentPrice)
-                return True
+                return currentPrice
             except:
                 #i want to retry
-                lg.info("Position not found, waiting for it...")
+                lg.info("Position not found, cannot check price waiting for it...")
                 time.sleep(5)  #wait 5 sec and retry
                 attempt += 1
 
-        lg.info("Position not found for %s, not waiting any more" % asset)
+        lg.error("Position not found for %s, not waiting any more" % asset)
         return False
 
     def get_general_trend(self, asset):
@@ -305,34 +327,80 @@ class Trader:
             lg.error(e)
             sys.exit()  
     
+    def check_stochastic_crossing(self, asset, trend):
+        #check if the stichastic curves have crossed or not
+        #depending on the trend
+            # IN: asset, trend
+            # OUT : True if crossed/ False if not crossed
+        lg.info("Checking stochastic crossing...")
+
+        data = "ask Alpaca wrapper for 5 min candles"
+        
+        # get stochastic values
+        stoch_k, stoch_d = ti.stoch(high, low, close, 9, 6, 9)
+        lg.info("%s stochastic = [%.2f, %.2f]" % (asset,stoch_k,stoch_d))
+
+        # logic
+        try:
+            if (trend == "long") and (stoch_k <= stoch_d):
+                lg.info("Stochastic curves crossed: long, k=%.2f, d=%.2f" % (stoch_k, stoch_d))
+                return True
+            elif (trend == "short") and (stoch_k >= stoch_d):
+                lg.info("Stochastic curves crossed: short, k=%.2f, d=%.2f" % (stoch_k, stoch_d))
+                return True
+            else:
+                lg.info("Stochastic curves have not crossed")
+                return False
+        
+        except Exception as e:
+            lg.error("Something went wrong at check stochastic crossing")
+            lg.error(e)
+            return True # return True becasue this is the way to force the closing of the possition, if false it will loop infinite
+
     def enter_position_mode(self, asset, direction):
         # enter position mode: check the filters in parallel (inside the positions)so if ay of them is cheked out we GET OUT
-            
-            entryPrice = " ask the Alpaca API for the entry price"
-            # set take profit
-            takeProfit = self.set_takeProfit(entryPrice, direction)
-            #set stop loss
-            stopLoss = self.set_stopLoss(entryPrice, direction)
 
+        attempt = 1
+        maxAttempt = 1440  # calculate 7-8 h how long the market is opened 8*60*60  / 20
+
+        entryPrice = " ask the Alpaca API for the entry price"
+        # set take profit
+        takeProfit = self.set_takeProfit(entryPrice, direction)
+        #set stop loss
+        stopLoss = self.set_stopLoss(entryPrice, direction)
+
+        try:
             while True:
 
+                currentPrice = self.get_current_price(asset)
+
+                # IF check take profit: -> if true CLOSE POSITION
                 if currentPrice >= takeProfit:
                     lg.info("take profit met at %.2f.Current price is %.2f getting out..." % (takeProfit, currentPrice))
-            # IF check take profit: -> if true CLOSE POSITION
-                # IN: current gains (earning $)
-                # OUT: True/False
-
-            # ELIF check stop loss->if true CLOSE POSITION
-                # IN: current losses (loosing $)
-                # OUT: True/False
-
-            # ELIF check stochastic crossing.Here we could be gaining or loosing. Pull 5 min data(OHLC)-> if true CLOSE POSITION
-                #STEP 1: pull 5 min OHLC data
-                    # in: asset
-                    #out: OHLC data (5 min candle)
-                #STEP 2: calculate sthocastic, see if the stochastic curves are crossing
-                    #in :OHLC data (5 min candle)
-                    #out : TRUE / FALSE if thei cross as TRUE we get out
+                    return True
+                # ELIF check stop loss->if true CLOSE POSITION
+                elif currentPrice <= stopLoss:
+                    lg.info("Stop loss met at %.2f. Current price is %.2f" % (stopLoss, currentPrice ))
+                    return True
+                # ELIF check stochastic crossing.Here we could be gaining or loosing. using fc above for check_stochastic_data
+                elif self.check_stochastic_crossing(): # here posibil error because this function takes input the trend and i dont have it here ?? check later
+                    lg.info("Stochastic curves crossed.Current price is %.2f" % currentPrice)
+                    return True
+                #else we wait
+                elif attempt <= maxAttempt:
+                    lg.info("Still waiting inside the position, attempt#%d" % attempt)
+                    lg.info("stop loss %.2f <-- current price %.2f --> take profit %.2f" % (stopLoss, currentPrice, takeProfit))
+                    time.sleep(20)
+                # get out , time is out
+                else:
+                    lg.info("Timeout reached at enter position, too late")
+                    return True
+                
+        except Exception as e:
+            lg.error("Something happend at enter position function")
+            lg.error(e)
+            return True
+                
 
     def run():
         # LOOP UNTIL TIMEOUT REACHED (EX 2H)
@@ -354,8 +422,12 @@ class Trader:
 
         # get stochastic - fc from above
             # if failed go back to POINT DELTA
+        
+        # get_current_price before submit the order to be sure
 
-
+        # get_shares_amount
+            # decide how much money/nr of shares we want to invest .but we have to check if we have the funds becouse we will have other open positions in that time!
+        
         # SUBMIT ORDER- this is a limit order - FUNCTION DEFINED ABOVE IN THE CLASS TO BE CALLED
             # if false abort, OR go back to POINT ECHO
 
@@ -364,6 +436,8 @@ class Trader:
 
         
         # ENTER POSITION MODE function # check the filters in parallel so if ay of them is cheked out we GET OUT
+            # loops until decides to get out
+            # it return true once we have to get out
            
         # GET OUT
         # SUBMIT ORDER- closing position/ sell what we have/ market order-FUNCTION DEFINED ABOVE IN THE CLASS TO BE CALLED interact with broker API
