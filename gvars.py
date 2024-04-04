@@ -14,7 +14,7 @@ takeProfitMargin = 0.1 # percentage margin for take profit
 
 maxSpendEquity = 1000 # $ total equity to spend in a single operation
 
-# attempt = 1 #starting point of attempts for dif functions
+maxVar = 2   ### !!! check properly that value should have !!!
 
 # Max attempts section :
 maxAttemptsCP = 5  # max attempts for Check Position function
@@ -24,7 +24,13 @@ maxAttemptsIT = 10 # ! total time = maxAttempts for instant trend  * 10 sec as i
 maxAttemptsRSI = 10 # ! total time = maxAttempts for RSI * 20 sec as implemented, // max attempts for Get RSI function
 maxAttemptsSTH = 20 # ! total time = maxAttempts for STOCHASTIC* 20 sec as implemented, // max attempts for Get STHOCASTIC function
 maxAttemptEPM = 1440  # calculate 7-8 h how long the market is opened 8*60*60  / 20 , // max attempts for Enter Position Mode function
+maxAttemptsGAEP = 10 # max attempts for Get Avg Entry price function 
 
-# Sleep time section:
+# Sleep time section:  time in sec
 sleepTimeCP = 5 # sleep time for Check Position
 sleepTimeGCP = 5  # sleep time for Get Current Price function
+sleepTimeGAEP = 5 # sleep time for Get Avg Entry Price function
+sleepTimeRSI = 20 # for rsi
+sleepTimeSTC = 10 # for stochastic
+sleepTimeEPM = 20 # for enter position mode fc
+sleepTimeGT = 60 # for general trend
