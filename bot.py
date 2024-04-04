@@ -4,15 +4,19 @@
 from traderlib import *
 from logger import *
 import sys
-import generalvariables
+import gvars
+import alpaca_trade_api as tradeapi
 
 
+# API_KEY = "PK1R56HAKWASE75FQNMS"
+# API_SECRET_KEY = "vkVpLuJjbfCafoQQ6QTNDh4jtMsdoq8fDa89ABcs"
+# API_URL = "https://paper-api.alpaca.markets/v2"
 
 # check our trading account(blocked? total amount)
 def check_account_ok():
     try: 
         #get account info
-        pass
+        print("Cheking")
     except Exception as e:
         lg.error("Could not get account info")
         lg.info(str(e))
@@ -33,7 +37,11 @@ def clean_open_orders():
 
 # execute trading bot this function is the main and will ex all the algorithm from traderlib.py
 def main():
+    
+    api= tradeapi.REST(key_id=gvars.API_KEY, secret_key=gvars.API_SECRET_KEY, base_url=gvars.API_URL, api_version="v2")
 
+    #import pdb; pdb.set_trace()
+    breakpoint()
     # initialize the logger (imported from logger)
     initialize_logger()
     # check if the account is ok

@@ -9,7 +9,7 @@ from datetime import datetime
 from math import ceil
 import gvars
 
-
+print(gvars.API_URL)
 class Trader:
 
     def __init__(self, ticker):
