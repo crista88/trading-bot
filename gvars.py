@@ -4,7 +4,7 @@
 
 API_KEY = "PK1R56HAKWASE75FQNMS"
 API_SECRET_KEY = "vkVpLuJjbfCafoQQ6QTNDh4jtMsdoq8fDa89ABcs"
-API_URL = "https://paper-api.alpaca.markets/v2"
+API_URL = "https://paper-api.alpaca.markets"
 
 stopLossMargin = 0.05  # percentage margin for stop loss
     # example : 10 - (10*0.05) = 9.5 means that my stop loss is at 9.5 $

@@ -8,31 +8,32 @@ import gvars
 import alpaca_trade_api as tradeapi
 
 
-# API_KEY = "PK1R56HAKWASE75FQNMS"
-# API_SECRET_KEY = "vkVpLuJjbfCafoQQ6QTNDh4jtMsdoq8fDa89ABcs"
-# API_URL = "https://paper-api.alpaca.markets/v2"
 
 # check our trading account(blocked? total amount)
-def check_account_ok():
+def check_account_ok(api):
     try: 
         #get account info
-        print("Cheking")
+        
+        account = api.get_account()
+        if account.status != "ACTIVE":
+            lg.error("The account is not AACTIVE, aborting")
+            sys.exit()
     except Exception as e:
         lg.error("Could not get account info")
         lg.info(str(e))
         sys.exit()
 
 # close current orders (doublecheck)
-def clean_open_orders():
-    #get list of open orders
-    lg.info("List of open orders")
-    lg.info(str(open_orders))
-
-    for order in open_orders:
-        #close order
-        lg.info("Order %s closed" % str(order.id))
+def clean_open_orders(api):
+    lg.info("Cancelling all orders..")
     
-    lg.info("Closing orders complete")
+    try:
+        api.cancel_all_orders()
+        lg.info("Closing orders complete")
+    except Exception as e:
+        lg.error("Could not cancell all orders")
+        lg.error(e)
+        sys.exit()
 
 
 # execute trading bot this function is the main and will ex all the algorithm from traderlib.py
@@ -40,15 +41,19 @@ def main():
     
     api= tradeapi.REST(key_id=gvars.API_KEY, secret_key=gvars.API_SECRET_KEY, base_url=gvars.API_URL, api_version="v2")
 
-    #import pdb; pdb.set_trace()
-    breakpoint()
+   
     # initialize the logger (imported from logger)
     initialize_logger()
+
+      
     # check if the account is ok
-    check_account_ok()
+    check_account_ok(api)
+
+     
     # close current order
-    clean_open_orders()
+    clean_open_orders(api)
     #define asset insert the value/ get the ticker
+    import pdb; pdb.set_trace()
     ticker = input("Write the ticker you want to operate with")
 
     trader = Trader(ticker) #initialize trading bot
