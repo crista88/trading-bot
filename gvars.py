@@ -34,3 +34,5 @@ sleepTimeRSI = 20 # for rsi
 sleepTimeSTC = 10 # for stochastic
 sleepTimeEPM = 20 # for enter position mode fc
 sleepTimeGT = 60 # for general trend
+
+#import pdb; pdb.set_trace()

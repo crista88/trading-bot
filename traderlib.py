@@ -318,12 +318,12 @@ class Trader:
             while True:
                 # period = 50 samples of 5 mi = 1day
                 data = self.load_historical_data(ticker, interval="5m", period="1d")
-                close = data.Close.values
+                #close = data.Close.values
 
                 # calculate the EMAs
-                ema9 = ti.ema(data.close, 9)[-1]
-                ema26 = ti.ema(data.close, 26)[-1]
-                ema50 = ti.ema(data.close, 50)[-1]
+                ema9 = ti.ema(data.Close.values, 9)[-1]
+                ema26 = ti.ema(data.Close.values, 26)[-1]
+                ema50 = ti.ema(data.Close.values, 50)[-1]
 
                 lg.info("%s instant trend EMAs: [%.2f,%.2f,%.2f]" % (ticker,ema9,ema26,ema50))
 
