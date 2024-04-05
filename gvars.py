@@ -14,25 +14,31 @@ takeProfitMargin = 0.1 # percentage margin for take profit
 
 maxSpendEquity = 1000 # $ total equity to spend in a single operation
 
-maxVar = 2   ### !!! check properly that value should have !!!
+maxVar = 0.02   ###  5% the ammount that we want to add or substract to the price in calc the limit price for  putting in an order!!! 
+                    # in other words max variation percentage when buying/selling
+                #check properly what value should have !!! maybe fill have to be 2-3-5 % or can go high..check with tests
 
 # Max attempts section :
-maxAttemptsCP = 5  # max attempts for Check Position function
+maxAttemptsCP = 10  # max attempts for Check Position function
 maxAttemptsGCP = 5 # max attempts for Get Current Price function
 maxAttemptsGT = 10 # ! total time = maxAttempts for general trend* 60 sec as implemented, // max attempts for Get General Trend function
-maxAttemptsIT = 10 # ! total time = maxAttempts for instant trend  * 10 sec as implemented, // max attempts for Get Instant Trend function
-maxAttemptsRSI = 10 # ! total time = maxAttempts for RSI * 20 sec as implemented, // max attempts for Get RSI function
+maxAttemptsIT = 20 # ! total time = maxAttempts for instant trend  * 10 sec as implemented, // max attempts for Get Instant Trend function
+maxAttemptsRSI = 20 # ! total time = maxAttempts for RSI * 20 sec as implemented, // max attempts for Get RSI function
 maxAttemptsSTH = 20 # ! total time = maxAttempts for STOCHASTIC* 20 sec as implemented, // max attempts for Get STHOCASTIC function
-maxAttemptEPM = 1440  # calculate 7-8 h how long the market is opened 8*60*60  / 20 , // max attempts for Enter Position Mode function
-maxAttemptsGAEP = 10 # max attempts for Get Avg Entry price function 
+maxAttemptsEPM = 10  # calculate 7-8 h how long the market is opened 8*60*60  / 20 , // max attempts for Enter Position Mode function 360 OR 1440 ??? CHECK WITH TESTS
+maxAttemptsGAEP = 5 # max attempts for Get Avg Entry price function 
+maxAttemptsCPO = 5 # max att for closing pending orders
 
 # Sleep time section:  time in sec
 sleepTimeCP = 5 # sleep time for Check Position
 sleepTimeGCP = 5  # sleep time for Get Current Price function
 sleepTimeGAEP = 5 # sleep time for Get Avg Entry Price function
-sleepTimeRSI = 20 # for rsi
-sleepTimeSTC = 10 # for stochastic
-sleepTimeEPM = 20 # for enter position mode fc
-sleepTimeGT = 60 # for general trend
+sleepTimeRSI = 30 # for rsi  val 30
+sleepTimeSTC = 20 # for stochastic val 20
+sleepTimeEPM = 10 # for enter position mode fc val 10
+sleepTimeGT = 60 # for general trend val 60
+sleepTimeIT = 30 # for instand trend val 30
+sleepTimeCPO = 5 # FOR CHECK PENDING POSITION
+sleepTimeME = 60 # MAIN EXECUTION AFTER FAILING  val ok 60*60
 
 #import pdb; pdb.set_trace()

@@ -73,9 +73,8 @@ def main():
     clean_open_orders(api)
     #define asset insert the value/ get the ticker
     
-    #ticker = input("Write the ticker you want to operate with")
-    ticker = "TSLA"
-
+    ticker = input("Write the ticker you want to operate with")
+    
     check_asset_ok(api, ticker) # we make sure that the asset has a ticker-ex TSLA for tesla, 
                         #not to have a fake ticker or with error because if so the boot will say that it didnt found open pos for that wrong tiker and 
                         #it will run operations for it and we dont want this!
@@ -83,16 +82,19 @@ def main():
 
     trader = Trader(ticker, api) #initialize trading bot
 
-   
-    tradingSuccess = trader.run(ticker) #run trading bot library 
-    #run trading bot it's going to be a function from traderlib
-        # in: string (ticker)
-        # OUT: boolean (Tru = succes / False = failure)
+    while True:
+        tradingSuccess = trader.run(ticker) #run trading bot library 
+            # in: string (ticker)
+            # OUT: boolean (Tru = succes / False = failure)
 
-    breakpoint()
-    if not tradingSuccess:
-        lg.info("Trading was not successful, locking asset")
-        # wait some time
+        if not tradingSuccess:
+            lg.info("Trading was not successful, locking asset")
+            time.sleep(gvars.sleepTimeME)
+            # wait some time
+        else:
+            lg.info("Trading was succesful!")
+            time.sleep(gvars.sleepTimeME)
+            # wait some time
 
 
 if __name__ == "__main__":
