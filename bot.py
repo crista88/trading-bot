@@ -73,7 +73,7 @@ def main():
     clean_open_orders(api)
     #define asset insert the value/ get the ticker
     
-    ticker = input("Write the ticker you want to operate with")
+    ticker = input("Write the ticker you want to operate with: ")
     
     check_asset_ok(api, ticker) # we make sure that the asset has a ticker-ex TSLA for tesla, 
                         #not to have a fake ticker or with error because if so the boot will say that it didnt found open pos for that wrong tiker and 

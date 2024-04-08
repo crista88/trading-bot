@@ -11,6 +11,7 @@ import gvars
 from enum import Enum
 from alpaca_trade_api.rest import REST, TimeFrame, TimeFrameUnit
 import yfinance as yf
+import requests
 
 
 class Trader:
@@ -79,13 +80,14 @@ class Trader:
         except Exception as e:
             lg.error("The direction value is not understood: %s" % str(trend))
             sys.exit()
-      
+
     def load_historical_data(self, ticker, interval, period):
         #load the historical stocks data: content from API and gives us a valid array. I put it here because i want to make some checks before put it in the algorithm
             # IN: api, ticker, interval(window length- aggregation 1Day, 1Hour, 15Min, 1Min), entry limit
             # OUT: array with stock data(OHCL data)   OHCL = open high close low data 
         
         try:
+
             ticker = yf.Ticker(ticker)
             data = ticker.history(period, interval)
 
