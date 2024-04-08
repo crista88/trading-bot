@@ -458,13 +458,13 @@ class Trader:
         # logic
         try:
             if (trend == "long") and (stoch_k <= stoch_d):
-                lg.info("Stochastic curves crossed: long, k=%.2f, d=%.2f" % (stoch_k, stoch_d))
+                lg.info("\nStochastic curves crossed: long, k=%.2f, d=%.2f" % (stoch_k, stoch_d))
                 return True
             elif (trend == "short") and (stoch_k >= stoch_d):
-                lg.info("Stochastic curves crossed: short, k=%.2f, d=%.2f" % (stoch_k, stoch_d))
+                lg.info("\Stochastic curves crossed: short, k=%.2f, d=%.2f" % (stoch_k, stoch_d))
                 return True
             else:
-                lg.info("Stochastic curves have not crossed")
+                lg.info("\nStochastic curves have not crossed")
                 return False
         
         except Exception as e:
@@ -593,7 +593,7 @@ class Trader:
             )
 
             # CHECK POSITION: see if the position exists-FUNCTION DEFINED ABOVE IN THE CLASS TO BE CALLED
-            if not self.check_position(ticker):
+            if not self.check_position(ticker):   
                 # cancel the order fUNCTION ABOVE DEFINED
                 self.cancel_pending_order(ticker)
                 continue # go back to POINT ECHO if we failed in finding the position (the order did not went through) or we continue if we found it
